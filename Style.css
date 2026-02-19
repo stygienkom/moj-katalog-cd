@@ -1,0 +1,177 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #1a1a1a;
+    color: #eee;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+h1 { text-align: center; color: #00d4ff; }
+
+form {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Zastosuj do wszystkich elementów, aby uniknąć wystawania poza ekran */
+* {
+    box-sizing: border-box;
+}
+
+/* Ustawienie pól w jednym rzędzie */
+.row {
+    display: flex;
+    gap: 10px;      /* Odstęp między polami */
+    width: 100%;    /* Rząd zajmuje pełną szerokość formularza */
+}
+
+.row input {
+    flex: 1;        /* Oba pola będą miały taką samą szerokość (50/50) */
+    min-width: 0;   /* Zapobiega wypychaniu kontenera przez pola typu number */
+}
+
+/* Stylizacja inputów, aby wyglądały spójnie */
+input {
+    width: 100%;    /* Pozostałe pola (tytuł, wykonawca) zajmą całą linię */
+    padding: 12px;
+    background: #333;
+    border: 1px solid #444;
+    color: white;
+    border-radius: 4px;
+}
+
+
+button {
+    padding: 10px;
+    background-color: #00d4ff;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover { background-color: #008fb3; }
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+/* Kontener karty - układ poziomy (Flexbox) */
+.cd-card {
+    background: #2a2a2a;
+    border-radius: 8px;
+    margin-bottom: 0px;
+    border: 1px solid #444;
+    display: flex;         /* To ustawia obrazek i tekst w jednej linii */
+    align-items: center;   /* Centrowanie pionowe zawartości */
+    padding: 10px;
+    gap: 15px;             /* Odstęp między okładką a tekstem */
+}
+
+
+.cd-card:hover { transform: translateY(-5px); }
+
+/* Stylizacja samej okładki */
+.cd-card img {
+    width: 100px;          /* Stała szerokość */
+    height: 100px;         /* Stała wysokość */
+    min-width: 100px;      /* Zabezpieczenie przed ściskaniem obrazka */
+    object-fit: cover;     /* Dopasowanie do kwadratu bez rozciągania */
+    object-position: center; 
+    border-radius: 4px;    /* Zaokrąglone rogi okładki */
+    border: 1px solid #555;
+}
+
+
+
+/* Kontener z tekstami po prawej stronie */
+.cd-info {
+    flex: 1;               /* Tekst zajmuje całą pozostałą przestrzeń */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.cd-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.1em;
+    color: #00d4ff;
+}
+
+.cd-info p {
+    margin: 2px 0;
+    font-size: 0.9em;
+    color: #ccc;
+}
+
+/* Przycisk usuwania dopasowany do układu */
+.actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.edit-btn {
+    background-color: #f39c12; /* Pomarańczowy */
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    flex: 1;
+}
+
+.delete-btn {
+    background-color: #e74c3c; /* Czerwony */
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    flex: 1;
+}
+
+.edit-btn:hover { background-color: #d35400; }
+
+
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#search-input {
+    flex: 2;
+}
+
+#sort-select {
+    flex: 1;
+    padding: 10px;
+    background: #333;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 4px;
+}
+
+/* RWD dla filtrów na małe ekrany */
+@media (max-width: 600px) {
+    .controls {
+        flex-direction: column;
+    }
+}
