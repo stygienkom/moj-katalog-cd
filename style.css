@@ -169,12 +169,8 @@ button:hover { background-color: #008fb3; }
     border-radius: 4px;
 }
 
-/* RWD dla filtrów na małe ekrany */
-@media (max-width: 600px) {
-    .controls {
-        flex-direction: column;
-    }
-}
+
+
 .user-selector {
     display: flex;
     align-items: center;
@@ -199,4 +195,10 @@ button:hover { background-color: #008fb3; }
     border-radius: 50%;
     font-size: 20px;
     padding: 0;
+}
+/* RWD dla filtrów na małe ekrany */
+@media (max-width: 600px) {
+    .controls {
+        flex-direction: column;
+    }
 }
