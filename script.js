@@ -1,195 +1,202 @@
-const cdForm = document.getElementById('cd-form');
-const cdList = document.getElementById('cd-list');
-const titleInput = document.getElementById('title');
-const artistInput = document.getElementById('artist');
-const yearInput = document.getElementById('year');
-const discsInput = document.getElementById('discs');
-const coverInput = document.getElementById('cover');
-const searchInput = document.getElementById('search-input');
-const sortSelect = document.getElementById('sort-select');
-const userSelect = document.getElementById('user-select');
-const addUserBtn = document.getElementById('add-user-btn');
-
-let editId = null; // Przechowuje ID edytowanej płyty
-
-// --- LOGIKA PROFILI UŻYTKOWNIKÓW ---
-
-// Klucz w localStorage zależy od wybranego użytkownika
-function getStorageKey() {
-    const user = userSelect.value;
-    return `cds_${user}`;
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #1a1a1a;
+    color: #eee;
+    margin: 0;
+    padding: 20px;
 }
 
-function getCDsFromStorage() {
-    const key = getStorageKey();
-    return localStorage.getItem(key) ? JSON.parse(localStorage.getItem(key)) : [];
+.container {
+    max-width: 900px;
+    margin: 0 auto;
 }
 
-function saveAllCDs(cds) {
-    const key = getStorageKey();
-    localStorage.setItem(key, JSON.stringify(cds));
+h1 { text-align: center; color: #00d4ff; }
+
+form {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-// Zmiana użytkownika odświeża listę
-userSelect.addEventListener('change', () => {
-    editId = null;
-    cdForm.reset();
-    document.getElementById('add-btn').innerText = "Dodaj do kolekcji";
-    displayCDs();
-});
+/* Zastosuj do wszystkich elementów, aby uniknąć wystawania poza ekran */
+* {
+    box-sizing: border-box;
+}
 
-// Dodawanie nowego profilu
-addUserBtn.addEventListener('click', () => {
-    const newUser = prompt("Wpisz imię nowego użytkownika:");
-    if (newUser && newUser.trim() !== "") {
-        const option = document.createElement('option');
-        option.value = newUser;
-        option.textContent = newUser;
-        userSelect.appendChild(option);
-        userSelect.value = newUser;
-        displayCDs();
+/* Ustawienie pól w jednym rzędzie */
+.row {
+    display: flex;
+    gap: 10px;      /* Odstęp między polami */
+    width: 100%;    /* Rząd zajmuje pełną szerokość formularza */
+}
+
+.row input {
+    flex: 1;        /* Oba pola będą miały taką samą szerokość (50/50) */
+    min-width: 0;   /* Zapobiega wypychaniu kontenera przez pola typu number */
+}
+
+/* Stylizacja inputów, aby wyglądały spójnie */
+input {
+    width: 100%;    /* Pozostałe pola (tytuł, wykonawca) zajmą całą linię */
+    padding: 12px;
+    background: #333;
+    border: 1px solid #444;
+    color: white;
+    border-radius: 4px;
+}
+
+
+button {
+    padding: 10px;
+    background-color: #00d4ff;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover { background-color: #008fb3; }
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+/* Kontener karty - układ poziomy (Flexbox) */
+.cd-card {
+    background: #2a2a2a;
+    border-radius: 8px;
+    margin-bottom: 0px;
+    border: 1px solid #444;
+    display: flex;         /* To ustawia obrazek i tekst w jednej linii */
+    align-items: center;   /* Centrowanie pionowe zawartości */
+    padding: 10px;
+    gap: 15px;             /* Odstęp między okładką a tekstem */
+}
+
+
+.cd-card:hover { transform: translateY(-5px); }
+
+/* Stylizacja samej okładki */
+.cd-card img {
+    width: 100px;          /* Stała szerokość */
+    height: 100px;         /* Stała wysokość */
+    min-width: 100px;      /* Zabezpieczenie przed ściskaniem obrazka */
+    object-fit: cover;     /* Dopasowanie do kwadratu bez rozciągania */
+    object-position: center; 
+    border-radius: 4px;    /* Zaokrąglone rogi okładki */
+    border: 1px solid #555;
+}
+
+
+
+/* Kontener z tekstami po prawej stronie */
+.cd-info {
+    flex: 1;               /* Tekst zajmuje całą pozostałą przestrzeń */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.cd-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.1em;
+    color: #00d4ff;
+}
+
+.cd-info p {
+    margin: 2px 0;
+    font-size: 0.9em;
+    color: #ccc;
+}
+
+/* Przycisk usuwania dopasowany do układu */
+.actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.edit-btn {
+    background-color: #f39c12; /* Pomarańczowy */
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    flex: 1;
+}
+
+.delete-btn {
+    background-color: #e74c3c; /* Czerwony */
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    flex: 1;
+}
+
+.edit-btn:hover { background-color: #d35400; }
+
+
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#search-input {
+    flex: 2;
+}
+
+#sort-select {
+    flex: 1;
+    padding: 10px;
+    background: #333;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 4px;
+}
+
+/* RWD dla filtrów na małe ekrany */
+@media (max-width: 600px) {
+    .controls {
+        flex-direction: column;
     }
-});
-
-// --- AUTOMATYCZNE POBIERANIE DANYCH (iTunes API) ---
-
-async function autoFetchData() {
-    const title = titleInput.value.trim();
-    const artist = artistInput.value.trim();
-
-    // Pobieraj tylko gdy pola są pełne i nie jesteśmy w trybie edycji (żeby nie nadpisać)
-    if (title && artist && !editId) {
-        const query = encodeURIComponent(`${artist} ${title}`);
-        const url = `https://itunes.apple.com/search?term=${query}&entity=album&limit=1`;
-
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data.results.length > 0) {
-                const result = data.results[0];
-                
-                // Uzupełnij rok jeśli pusty
-                if (!yearInput.value) {
-                    yearInput.value = result.releaseDate.substring(0, 4);
-                }
-                // Uzupełnij okładkę jeśli pusta (zamiana na wysoką rozdzielczość)
-                if (!coverInput.value) {
-                    coverInput.value = result.artworkUrl100.replace('100x100bb', '600x600bb');
-                }
-            }
-        } catch (e) {
-            console.error("Błąd auto-pobierania:", e);
-        }
-    }
+}
+.user-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #2a2a2a;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #444;
 }
 
-titleInput.addEventListener('blur', autoFetchData);
-artistInput.addEventListener('blur', autoFetchData);
-
-// --- OBSŁUGA LISTY I FORMULARZA ---
-
-document.addEventListener('DOMContentLoaded', displayCDs);
-searchInput.addEventListener('input', displayCDs);
-sortSelect.addEventListener('change', displayCDs);
-
-function displayCDs() {
-    let cds = getCDsFromStorage();
-    const searchTerm = searchInput.value.toLowerCase();
-    const sortBy = sortSelect.value;
-
-    // Filtrowanie
-    cds = cds.filter(cd => 
-        cd.title.toLowerCase().includes(searchTerm) || 
-        cd.artist.toLowerCase().includes(searchTerm)
-    );
-
-    // Sortowanie
-    cds.sort((a, b) => {
-        switch(sortBy) {
-            case 'newest': return b.year - a.year;
-            case 'oldest': return a.year - b.year;
-            case 'title': return a.title.localeCompare(a.title);
-            case 'artist': return a.artist.localeCompare(b.artist);
-            default: return 0;
-        }
-    });
-
-    cdList.innerHTML = '';
-    cds.forEach(cd => addCDToDOM(cd));
+#user-select {
+    flex: 1;
+    padding: 5px;
 }
 
-cdForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const cdData = {
-        title: titleInput.value,
-        artist: artistInput.value,
-        year: yearInput.value,
-        discs: discsInput.value,
-        cover: coverInput.value || 'https://via.placeholder.com/200?text=No+Cover'
-    };
-
-    let cds = getCDsFromStorage();
-
-    if (editId) {
-        const index = cds.findIndex(cd => cd.id === editId);
-        if (index !== -1) {
-            cds[index] = { ...cdData, id: editId };
-        }
-        editId = null;
-        document.getElementById('add-btn').innerText = "Dodaj do kolekcji";
-    } else {
-        const newCD = { ...cdData, id: Date.now() };
-        cds.push(newCD);
-    }
-
-    saveAllCDs(cds);
-    cdForm.reset();
-    displayCDs();
-});
-
-// --- KOMPONENTY KARTY CD ---
-
-function addCDToDOM(cd) {
-    const card = document.createElement('div');
-    card.classList.add('cd-card');
-    card.innerHTML = `
-        <img src="${cd.cover}" alt="Okładka" loading="lazy">
-        <div class="cd-info">
-            <h3>${cd.title}</h3>
-            <p><strong>${cd.artist}</strong></p>
-            <p>Rok: ${cd.year} | CD: ${cd.discs}</p>
-            <div class="actions">
-                <button class="edit-btn" onclick="editCD(${cd.id})">Edytuj</button>
-                <button class="delete-btn" onclick="deleteCD(${cd.id})">Usuń</button>
-            </div>
-        </div>
-    `;
-    cdList.appendChild(card);
-}
-
-function deleteCD(id) {
-    if (confirm("Usunąć tę płytę z kolekcji użytkownika " + userSelect.value + "?")) {
-        let cds = getCDsFromStorage();
-        cds = cds.filter(cd => cd.id !== id);
-        saveAllCDs(cds);
-        displayCDs();
-    }
-}
-
-function editCD(id) {
-    const cds = getCDsFromStorage();
-    const cd = cds.find(item => item.id === id);
-
-    if (cd) {
-        titleInput.value = cd.title;
-        artistInput.value = cd.artist;
-        yearInput.value = cd.year;
-        discsInput.value = cd.discs;
-        coverInput.value = cd.cover;
-
-        editId = id;
-        document.getElementById('add-btn').innerText = "Zaktualizuj dane";
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+#add-user-btn {
+    background: #00d4ff;
+    color: black;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    font-size: 20px;
+    padding: 0;
 }
