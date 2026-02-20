@@ -1,6 +1,6 @@
 const cdForm = document.getElementById('cd-form');
 const cdList = document.getElementById('cd-list');
-const fetchCoverBtn = document.getElementById('fetch-cover-btn');
+
 const coverInput = document.getElementById('cover');
 const titleInput = document.getElementById('title');
 const artistInput = document.getElementById('artist');
@@ -71,7 +71,6 @@ cdForm.addEventListener('submit', (e) => {
     localStorage.setItem('cds', JSON.stringify(cds));
     
     cdForm.reset(); 
-    fetchCoverBtn.innerText = "🔍 Pobierz";
     displayCDs(); // Odśwież listę z uwzględnieniem filtrów
 });
 
@@ -153,36 +152,3 @@ function addCDToDOM(cd) {
     `;
     cdList.appendChild(card);
 }
-
-// --- RĘCZNE POBIERANIE (PRZYCISK) ---
-fetchCoverBtn.addEventListener('click', async () => {
-    const title = titleInput.value;
-    const artist = artistInput.value;
-
-    if (!title || !artist) {
-        alert("Wpisz tytuł i wykonawcę!");
-        return;
-    }
-
-    fetchCoverBtn.innerText = "Szukam...";
-    const query = encodeURIComponent(`${artist} ${title}`);
-    const url = `https://itunes.apple.com/search?term=${query}&entity=album&limit=1`;
-
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data.results.length > 0) {
-            const result = data.results[0];
-            coverInput.value = result.artworkUrl100; // Miniaturka 100x100
-            yearInput.value = result.releaseDate ? result.releaseDate.substring(0, 4) : "";
-            fetchCoverBtn.innerText = "✅ Jest!";
-        } else {
-            alert("Nie znaleziono okładki.");
-            fetchCoverBtn.innerText = "🔍 Pobierz";
-        }
-    } catch (error) {
-        alert("Błąd połączenia.");
-        fetchCoverBtn.innerText = "🔍 Pobierz";
-    }
-});
