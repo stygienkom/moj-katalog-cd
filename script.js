@@ -10,14 +10,37 @@ const sortSelect = document.getElementById('sort-select');
 const userSelect = document.getElementById('user-select');
 const addUserBtn = document.getElementById('add-user-btn');
 
-let editId = null; // Przechowuje ID edytowanej płyty
+let editId = null; 
 
-// --- LOGIKA PROFILI UŻYTKOWNIKÓW ---
+// --- LOGIKA PROFILI UŻYTKOWNIKÓW (Z AUTOMATYCZNYM ZAPISEM) ---
 
-// Klucz w localStorage zależy od wybranego użytkownika
+// Ładuje listę użytkowników z localStorage przy starcie
+function loadUsersList() {
+    const savedUsers = localStorage.getItem('app_users');
+    if (savedUsers) {
+        const users = JSON.parse(savedUsers);
+        userSelect.innerHTML = ''; // Czyścimy domyślne opcje z HTML
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user;
+            option.textContent = user;
+            userSelect.appendChild(option);
+        });
+    } else {
+        // Jeśli pierwszy raz otwierasz apkę, zapisz listę domyślną
+        const defaultUsers = ["Domyslny", "Ania", "Marek"];
+        localStorage.setItem('app_users', JSON.stringify(defaultUsers));
+    }
+}
+
+// Zapisuje aktualną listę użytkowników widoczną w <select>
+function saveUsersToStorage() {
+    const users = Array.from(userSelect.options).map(opt => opt.value);
+    localStorage.setItem('app_users', JSON.stringify(users));
+}
+
 function getStorageKey() {
-    const user = userSelect.value;
-    return `cds_${user}`;
+    return `cds_${userSelect.value}`;
 }
 
 function getCDsFromStorage() {
@@ -30,25 +53,35 @@ function saveAllCDs(cds) {
     localStorage.setItem(key, JSON.stringify(cds));
 }
 
-// Zmiana użytkownika odświeża listę
+// Dodawanie nowego profilu
+addUserBtn.addEventListener('click', () => {
+    const newUser = prompt("Wpisz imię nowego użytkownika:");
+    if (newUser && newUser.trim() !== "") {
+        const trimmedUser = newUser.trim();
+        
+        // Sprawdź czy już istnieje
+        const exists = Array.from(userSelect.options).some(opt => opt.value === trimmedUser);
+        
+        if (!exists) {
+            const option = document.createElement('option');
+            option.value = trimmedUser;
+            option.textContent = trimmedUser;
+            userSelect.appendChild(option);
+            
+            userSelect.value = trimmedUser;
+            saveUsersToStorage(); // Zapisz nową listę użytkowników
+            displayCDs();
+        } else {
+            alert("Użytkownik o tym imieniu już istnieje!");
+        }
+    }
+});
+
 userSelect.addEventListener('change', () => {
     editId = null;
     cdForm.reset();
     document.getElementById('add-btn').innerText = "Dodaj do kolekcji";
     displayCDs();
-});
-
-// Dodawanie nowego profilu
-addUserBtn.addEventListener('click', () => {
-    const newUser = prompt("Wpisz imię nowego użytkownika:");
-    if (newUser && newUser.trim() !== "") {
-        const option = document.createElement('option');
-        option.value = newUser;
-        option.textContent = newUser;
-        userSelect.appendChild(option);
-        userSelect.value = newUser;
-        displayCDs();
-    }
 });
 
 // --- AUTOMATYCZNE POBIERANIE DANYCH (iTunes API) ---
@@ -57,7 +90,6 @@ async function autoFetchData() {
     const title = titleInput.value.trim();
     const artist = artistInput.value.trim();
 
-    // Pobieraj tylko gdy pola są pełne i nie jesteśmy w trybie edycji (żeby nie nadpisać)
     if (title && artist && !editId) {
         const query = encodeURIComponent(`${artist} ${title}`);
         const url = `https://itunes.apple.com/search?term=${query}&entity=album&limit=1`;
@@ -67,12 +99,9 @@ async function autoFetchData() {
             const data = await response.json();
             if (data.results.length > 0) {
                 const result = data.results[0];
-                
-                // Uzupełnij rok jeśli pusty
                 if (!yearInput.value) {
                     yearInput.value = result.releaseDate.substring(0, 4);
                 }
-                // Uzupełnij okładkę jeśli pusta (zamiana na wysoką rozdzielczość)
                 if (!coverInput.value) {
                     coverInput.value = result.artworkUrl100.replace('100x100bb', '600x600bb');
                 }
@@ -88,7 +117,11 @@ artistInput.addEventListener('blur', autoFetchData);
 
 // --- OBSŁUGA LISTY I FORMULARZA ---
 
-document.addEventListener('DOMContentLoaded', displayCDs);
+document.addEventListener('DOMContentLoaded', () => {
+    loadUsersList(); // Najpierw wczytaj ludzi
+    displayCDs();    // Potem ich płyty
+});
+
 searchInput.addEventListener('input', displayCDs);
 sortSelect.addEventListener('change', displayCDs);
 
@@ -97,18 +130,16 @@ function displayCDs() {
     const searchTerm = searchInput.value.toLowerCase();
     const sortBy = sortSelect.value;
 
-    // Filtrowanie
     cds = cds.filter(cd => 
         cd.title.toLowerCase().includes(searchTerm) || 
         cd.artist.toLowerCase().includes(searchTerm)
     );
 
-    // Sortowanie
     cds.sort((a, b) => {
         switch(sortBy) {
             case 'newest': return b.year - a.year;
             case 'oldest': return a.year - b.year;
-            case 'title': return a.title.localeCompare(a.title);
+            case 'title': return a.title.localeCompare(b.title);
             case 'artist': return a.artist.localeCompare(b.artist);
             default: return 0;
         }
