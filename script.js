@@ -9,6 +9,7 @@ const searchInput = document.getElementById('search-input');
 const sortSelect = document.getElementById('sort-select');
 const userSelect = document.getElementById('user-select');
 const addUserBtn = document.getElementById('add-user-btn');
+const removeUserBtn = document.getElementById('remove-user-btn'); // Nowy przycisk
 
 let editId = null; 
 
@@ -17,20 +18,21 @@ let editId = null;
 // Ładuje listę użytkowników z localStorage przy starcie
 function loadUsersList() {
     const savedUsers = localStorage.getItem('app_users');
+    let users = ["Domyslny", "Ania", "Marek"]; // Domyślne imiona
+
     if (savedUsers) {
-        const users = JSON.parse(savedUsers);
-        userSelect.innerHTML = ''; // Czyścimy domyślne opcje z HTML
-        users.forEach(user => {
-            const option = document.createElement('option');
-            option.value = user;
-            option.textContent = user;
-            userSelect.appendChild(option);
-        });
+        users = JSON.parse(savedUsers);
     } else {
-        // Jeśli pierwszy raz otwierasz apkę, zapisz listę domyślną
-        const defaultUsers = ["Domyslny", "Ania", "Marek"];
-        localStorage.setItem('app_users', JSON.stringify(defaultUsers));
+        localStorage.setItem('app_users', JSON.stringify(users));
     }
+
+    userSelect.innerHTML = ''; 
+    users.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user;
+        option.textContent = user;
+        userSelect.appendChild(option);
+    });
 }
 
 // Zapisuje aktualną listę użytkowników widoczną w <select>
@@ -58,8 +60,6 @@ addUserBtn.addEventListener('click', () => {
     const newUser = prompt("Wpisz imię nowego użytkownika:");
     if (newUser && newUser.trim() !== "") {
         const trimmedUser = newUser.trim();
-        
-        // Sprawdź czy już istnieje
         const exists = Array.from(userSelect.options).some(opt => opt.value === trimmedUser);
         
         if (!exists) {
@@ -69,11 +69,38 @@ addUserBtn.addEventListener('click', () => {
             userSelect.appendChild(option);
             
             userSelect.value = trimmedUser;
-            saveUsersToStorage(); // Zapisz nową listę użytkowników
+            saveUsersToStorage();
             displayCDs();
         } else {
             alert("Użytkownik o tym imieniu już istnieje!");
         }
+    }
+});
+
+// USUWANIE AKTUALNEGO PROFILU
+removeUserBtn.addEventListener('click', () => {
+    const userToDelete = userSelect.value;
+
+    // Zabezpieczenie: musi zostać choć jeden użytkownik
+    if (userSelect.options.length <= 1) {
+        alert("Nie można usunąć ostatniego użytkownika!");
+        return;
+    }
+
+    const confirmDelete = confirm(`Czy na pewno chcesz usunąć profil "${userToDelete}"? Wszystkie płyty tego użytkownika zostaną skasowane.`);
+    
+    if (confirmDelete) {
+        // 1. Usuwamy kolekcję płyt z pamięci
+        localStorage.removeItem(`cds_${userToDelete}`);
+
+        // 2. Usuwamy użytkownika z listy w pamięci
+        let users = JSON.parse(localStorage.getItem('app_users'));
+        users = users.filter(u => u !== userToDelete);
+        localStorage.setItem('app_users', JSON.stringify(users));
+
+        // 3. Odświeżamy listę i widok
+        loadUsersList();
+        displayCDs();
     }
 });
 
@@ -118,8 +145,8 @@ artistInput.addEventListener('blur', autoFetchData);
 // --- OBSŁUGA LISTY I FORMULARZA ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadUsersList(); // Najpierw wczytaj ludzi
-    displayCDs();    // Potem ich płyty
+    loadUsersList();
+    displayCDs();
 });
 
 searchInput.addEventListener('input', displayCDs);
