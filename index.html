@@ -4,55 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Moja Kolekcja CD</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=3">
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
     <div class="container">
         <h1>💿 Katalog Płyt CD</h1>
-        <div class="user-selector">
-    <label for="user-select">👤 Użytkownik:</label>
-    <select id="user-select">
-        <option value="Domyslny">Domyślny</option>
-    </select>
-    <button id="add-user-btn">+</button>
-</div>
-
         
+        <div class="user-selector">
+            <label for="user-select">👤 Użytkownik:</label>
+            <select id="user-select">
+                <option value="Domyslny">Domyślny</option>
+            </select>
+            <div class="user-buttons">
+                <button id="add-user-btn" type="button" title="Dodaj użytkownika">+</button>
+                <button id="remove-user-btn" type="button" title="Usuń użytkownika">−</button>
+            </div>
+        </div>
+
         <form id="cd-form">
             <div>
                 <input type="text" id="title" placeholder="Tytuł albumu" required>
             </div>
             <div>
-
                 <input type="text" id="artist" placeholder="Wykonawca" required>
             </div>
             <div class="row">
-    <input type="number" id="year" placeholder="Rok wydania" required>
-    <input type="number" id="discs" placeholder="Ilość CD" min="1" value="1" required>
-</div>
-
+                <input type="number" id="year" placeholder="Rok wydania" required>
+                <input type="number" id="discs" placeholder="Ilość CD" min="1" value="1" required>
+            </div>
             <input type="url" id="cover" placeholder="Link do zdjęcia okładki (URL)">
-        
-
             <button type="submit" id="add-btn">Dodaj do kolekcji</button>
         </form>
         
         <div class="controls">
-    <input type="text" id="search-input" placeholder="🔍 Szukaj tytułu lub wykonawcy...">
-    <select id="sort-select">
-        <option value="newest">Od najnowszych</option>
-        <option value="oldest">Od najstarszych</option>
-        <option value="title">Tytuł (A-Z)</option>
-        <option value="artist">Wykonawca (A-Z)</option>
-    </select>
-</div>
-
-
+            <input type="text" id="search-input" placeholder="🔍 Szukaj tytułu lub wykonawcy...">
+            <select id="sort-select">
+                <option value="newest">Od najnowszych</option>
+                <option value="oldest">Od najstarszych</option>
+                <option value="title">Tytuł (A-Z)</option>
+                <option value="artist">Wykonawca (A-Z)</option>
+            </select>
+        </div>
 
         <div id="cd-list" class="grid-container">
             </div>
     </div>
-    <script src="script.js"></script>
+    
+    <script src="script.js?v=3"></script>
 </body>
 </html>
