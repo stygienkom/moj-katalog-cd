@@ -1,14 +1,16 @@
+/* --- PODSTAWY --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: 'Segoe UI', sans-serif;
     background-color: #1a1a1a;
     color: #eee;
-    margin: 0;
     padding: 20px;
-}
-
-/* Zastosuj do wszystkich elementów, aby uniknąć problemów z szerokością */
-* {
-    box-sizing: border-box;
+    line-height: 1.5;
 }
 
 .container {
@@ -16,146 +18,146 @@ body {
     margin: 0 auto;
 }
 
-h1 { text-align: center; color: #00d4ff; }
+h1 { text-align: center; color: #00d4ff; margin-bottom: 25px; }
 
+/* --- UŻYTKOWNIK (Okrągłe przyciski i pigułka) --- */
+.user-selector {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: #2a2a2a;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 25px;
+    border: 1px solid #444;
+}
+
+#user-select {
+    width: 140px;
+    padding: 8px;
+    background: #333;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 4px;
+    outline: none;
+}
+
+.user-buttons { display: flex; gap: 8px; }
+
+#add-user-btn, #remove-user-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: transform 0.2s;
+}
+
+#add-user-btn { background: #f39c12;color: #000; }
+#remove-user-btn { background: #e74c3c; color: white; }
+#add-user-btn:hover, #remove-user-btn:hover { transform: scale(1.1); }
+
+/* --- FORMULARZ --- */
 form {
     background: #2a2a2a;
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 4px;
     margin-bottom: 30px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
+    border: 1px solid #333;
 }
 
-/* --- WSPÓLNA STYLIZACJA PÓL WEJŚCIOWYCH --- */
-input, select, #user-select, #sort-select {
-    width: 100%;
+.input-group { display: flex; flex-direction: column; width: 100%; }
+.input-group label {
+    font-size: 0.75rem;
+    color: #00d4ff;
+    margin-bottom: 5px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+input, select {
     padding: 12px;
     background: #333;
     border: 1px solid #444;
     color: white;
     border-radius: 4px;
-    font-size: 16px; 
+    font-size: 15px;
     outline: none;
-    transition: border-color 0.3s;
 }
 
-input:focus, select:focus {
-    border-color: #00d4ff;
-}
+input:focus, select:focus { border-color: #00d4ff; }
 
-/* Ustawienie pól (Rok/Ilość) w jednym rzędzie */
-.row {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-}
+.row { display: flex; gap: 15px; }
+.row .input-group { flex: 1; }
 
-.row input {
-    flex: 1;
-    min-width: 0;
-}
-
-button {
-    padding: 10px;
-    background-color: #00d4ff;
+#add-btn {
+    background: #00d4ff;
     color: #000;
-    border: none;
-    border-radius: 4px;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.3s;
-}
-
-button:hover { background-color: #008fb3; }
-
-/* --- SEKCJA WYBORU UŻYTKOWNIKA --- */
-.user-selector {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: #2a2a2a;
-    padding: 10px 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    border: 1px solid #444;
-}
-
-#user-select {
-    flex: 1;
-    padding: 10px; 
-    cursor: pointer;
-}
-
-/* Kontener grupujący przyciski + i - */
-.user-buttons {
-    display: flex;
-    gap: 8px;
-}
-
-#add-user-btn, #remove-user-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    font-size: 22px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
     border: none;
-    cursor: pointer;
-    transition: 0.2s;
+    padding: 14px;
+    border-radius: 4px;
+    font-size: 16px;
+    text-transform: uppercase;
 }
 
-#add-user-btn {
-    background: #00d4ff;
-    color: black;
+/* --- SEKCJE FORMATÓW (Nagłówki CD/Winyl) --- */
+.format-section {
+    margin-bottom: 40px;
 }
 
-#add-user-btn:hover { background-color: #008fb3; }
-
-#remove-user-btn {
-    background: #e74c3c; /* Czerwony */
-    color: white;
-}
-
-#remove-user-btn:hover { background-color: #c0392b; }
-
-/* --- FILTRY I LISTA --- */
-.controls {
-    display: flex;
-    gap: 10px;
+.format-section-title {
+    font-size: 1.4rem;
+    color: #fff;
+    border-bottom: 2px solid #00d4ff;
+    padding-bottom: 8px;
     margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-#search-input {
-    flex: 2;
+.count-badge {
+    font-size: 0.9rem;
+    background: #00d4ff;
+    color: #000;
+    padding: 2px 12px;
+    border-radius: 4px;
+    font-weight: bold;
 }
 
-#sort-select {
-    flex: 1;
-}
-
+/* --- LISTA I KARTY --- */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 20px;
 }
 
 .cd-card {
     background: #2a2a2a;
-    border-radius: 8px;
+    border-radius: 4px;
     border: 1px solid #444;
     display: flex;
-    align-items: center;
-    padding: 10px;
+    flex-direction: column; /* Układ pionowy dla szerokich przycisków */
+    padding: 15px;
     gap: 15px;
-    transition: transform 0.2s;
 }
 
-.cd-card:hover { transform: translateY(-5px); }
+.cd-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
 
 .cd-card img {
     width: 100px;
@@ -163,48 +165,67 @@ button:hover { background-color: #008fb3; }
     min-width: 100px;
     object-fit: cover;
     border-radius: 4px;
-    border: 1px solid #555;
+    border: 1px solid #444;
 }
 
-.cd-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
+.cd-info { flex: 1; overflow: hidden; }
 .cd-info h3 {
-    margin: 0 0 5px 0;
-    font-size: 1.1em;
+    font-size: 1.1rem;
+    color: #00d4ff;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.cd-info p { font-size: 0.9rem; color: #ccc; }
+
+/* --- POWIĘKSZONE PRZYCISKI AKCJI (Szerokość 100%) --- */
+.actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.edit-btn, .delete-btn {
+    padding: 8px;
+    font-size: 0.85rem;
+    flex: 1;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.edit-btn { background: #f39c12; }
+.delete-btn { background: #e74c3c; }
+
+.edit-btn:hover { background: #d68910; }
+.delete-btn:hover { background: #c0392b; }
+.edit-btn:active, .delete-btn:active { transform: scale(0.98); }
+
+/* --- FILTRY I KONTROLKI --- */
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+#search-input { flex: 2; min-width: 200px; }
+#filter-format, #sort-select { 
+    flex: 1; 
+    min-width: 150px;
+    font-weight: bold;
     color: #00d4ff;
 }
 
-.cd-info p {
-    margin: 2px 0;
-    font-size: 0.9em;
-    color: #ccc;
-}
-
-.actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-.edit-btn {
-    background-color: #f39c12;
-    color: white;
-    flex: 1;
-}
-
-.delete-btn {
-    background-color: #e74c3c;
-    color: white;
-    flex: 1;
-}
-
-/* RWD dla filtrów na małe ekrany */
+/* RESPONSYWNOŚĆ */
 @media (max-width: 600px) {
-    .controls {
-        flex-direction: column;
-    }
+    .controls { flex-direction: column; }
+    .row { flex-direction: column; }
+    .user-selector { border-radius: 4px; flex-wrap: wrap; }
+    .grid-container { grid-template-columns: 1fr; }
 }
