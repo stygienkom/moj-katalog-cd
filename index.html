@@ -21,6 +21,14 @@
             </div>
         </div>
 
+        <div class="file-operations">
+            <button id="export-btn" type="button">💾 Zapisz kolekcję do pliku</button>
+            <label for="import-input" class="custom-file-upload">
+                📂 Wczytaj kolekcję z pliku
+            </label>
+            <input type="file" id="import-input" accept="application/json" style="display:none;">
+        </div>
+
         <form id="cd-form">
             <div class="input-group">
                 <label for="title">Tytuł albumu:</label>
@@ -58,6 +66,25 @@
 
             <button type="submit" id="add-btn">Dodaj do kolekcji</button>
         </form>
+
+        <div id="stats-container" class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Albumy</span>
+                <span id="stat-total-albums" class="stat-value">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Sztuk (Nośniki)</span>
+                <span id="stat-total-discs" class="stat-value">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Winyle</span>
+                <span id="stat-vinyl-count" class="stat-value">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Płyty CD</span>
+                <span id="stat-cd-count" class="stat-value">0</span>
+            </div>
+        </div>
         
         <div class="controls">
             <input type="text" id="search-input" placeholder="🔍 Szukaj w całej kolekcji...">
