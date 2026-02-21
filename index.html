@@ -8,7 +8,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>💿 Katalog Muzyczny</h1>
+        <div class="language-switcher">
+            <img src="https://flagcdn.com/w40/pl.png" onclick="setLanguage('pl')" alt="PL" class="flag-icon">
+            <img src="https://flagcdn.com/w40/gb.png" onclick="setLanguage('en')" alt="EN" class="flag-icon">
+        </div>
+
+        <h2>💿 Katalog Muzyczny</h2>
+        <h5>Autor: Mirosław Stygienko </h5>
         
         <div class="user-selector">
             <label for="user-select">Profil:</label>
@@ -22,9 +28,9 @@
         </div>
 
         <div class="file-operations">
-            <button id="export-btn" type="button">💾 Zapisz kolekcję do pliku</button>
+            <button id="export-btn" type="button">💾 Zapisz</button>
             <label for="import-input" class="custom-file-upload">
-                📂 Wczytaj kolekcję z pliku
+                📂 Wczytaj
             </label>
             <input type="file" id="import-input" accept="application/json" style="display:none;">
         </div>
