@@ -5,6 +5,7 @@ const artistInput = document.getElementById('artist');
 const yearInput = document.getElementById('year');
 const discsInput = document.getElementById('discs');
 const formatInput = document.getElementById('format-select-input');
+const toBuyInput = document.getElementById('to-buy-input'); // NOWE
 const coverInput = document.getElementById('cover');
 const searchInput = document.getElementById('search-input');
 const sortSelect = document.getElementById('sort-select');
@@ -51,21 +52,17 @@ function saveAllCDs(cds) {
     localStorage.setItem(getStorageKey(), JSON.stringify(cds));
 }
 
-// --- NOWA FUNKCJA: STATYSTYKI ---
+// --- STATYSTYKI ---
 function updateStatistics() {
     const cds = getCDsFromStorage();
     
-    // Liczba unikalnych albumów
+    // Liczymy tylko to, co już mamy (pomijamy wishlistę w głównych statystykach lub wliczamy - wg uznania)
+    // Tutaj: liczymy wszystko, ale separujemy formaty
     const totalAlbums = cds.length;
-    
-    // Suma wszystkich fizycznych nośników (pole 'ilość')
     const totalDiscs = cds.reduce((sum, cd) => sum + parseInt(cd.discs || 0), 0);
-    
-    // Liczba albumów na konkretnych nośnikach
     const vinylCount = cds.filter(c => c.format === 'Vinyl').length;
     const cdCount = cds.filter(c => c.format === 'CD').length;
 
-    // Aktualizacja elementów w HTML
     document.getElementById('stat-total-albums').innerText = totalAlbums;
     document.getElementById('stat-total-discs').innerText = totalDiscs;
     document.getElementById('stat-vinyl-count').innerText = vinylCount;
@@ -73,7 +70,6 @@ function updateStatistics() {
 }
 
 // --- OPERACJE NA PLIKACH ---
-
 if (exportBtn) {
     exportBtn.addEventListener('click', () => {
         const cds = getCDsFromStorage();
@@ -99,23 +95,18 @@ if (importInput) {
     importInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = (event) => {
             try {
                 const importedCDs = JSON.parse(event.target.result);
                 if (Array.isArray(importedCDs)) {
-                    if (confirm(`Czy zastąpić kolekcję profilu "${userSelect.value}" danymi z pliku (${importedCDs.length} płyt)?`)) {
+                    if (confirm(`Czy zastąpić kolekcję profilu "${userSelect.value}"?`)) {
                         saveAllCDs(importedCDs);
-                        displayCDs(); // To automatycznie wywoła statystyki
+                        displayCDs();
                         alert("Kolekcja wczytana pomyślnie!");
                     }
-                } else {
-                    alert("Błąd: Wybrany plik nie zawiera poprawnej listy płyt.");
                 }
-            } catch (err) {
-                alert("Błąd krytyczny pliku JSON.");
-            }
+            } catch (err) { alert("Błąd pliku JSON."); }
             importInput.value = "";
         };
         reader.readAsText(file);
@@ -123,7 +114,6 @@ if (importInput) {
 }
 
 // --- ZARZĄDZANIE PROFILAMI ---
-
 addUserBtn.addEventListener('click', () => {
     const newUser = prompt("Imię nowego użytkownika:");
     if (newUser?.trim()) {
@@ -141,7 +131,7 @@ addUserBtn.addEventListener('click', () => {
 
 removeUserBtn.addEventListener('click', () => {
     if (userSelect.options.length <= 1) return alert("Nie można usunąć ostatniego profilu!");
-    if (confirm(`Usunąć profil ${userSelect.value} wraz z jego kolekcją?`)) {
+    if (confirm(`Usunąć profil ${userSelect.value}?`)) {
         localStorage.removeItem(getStorageKey());
         let users = JSON.parse(localStorage.getItem('app_users')).filter(u => u !== userSelect.value);
         localStorage.setItem('app_users', JSON.stringify(users));
@@ -175,21 +165,25 @@ async function autoFetchData() {
 titleInput.addEventListener('blur', autoFetchData);
 artistInput.addEventListener('blur', autoFetchData);
 
-// --- RENDEROWANIE LISTY (Z AKTUALIZACJĄ STATYSTYK) ---
+// --- RENDEROWANIE LISTY ---
 function displayCDs() {
-    // KLUCZOWE: Wywołujemy statystyki przy każdym odświeżeniu widoku
     updateStatistics();
-
     let cds = getCDsFromStorage();
     const search = searchInput.value.toLowerCase();
     const selectedFormat = filterFormat.value;
 
+    // Filtrowanie (z uwzględnieniem wishlisty)
     cds = cds.filter(c => {
         const matchesSearch = c.title.toLowerCase().includes(search) || c.artist.toLowerCase().includes(search);
-        const matchesFormat = selectedFormat === 'all' || c.format === selectedFormat;
+        let matchesFormat = false;
+        if (selectedFormat === 'all') matchesFormat = true;
+        else if (selectedFormat === 'wishlist') matchesFormat = c.toBuy === true;
+        else matchesFormat = c.format === selectedFormat;
+        
         return matchesSearch && matchesFormat;
     });
     
+    // Sortowanie
     cds.sort((a, b) => {
         const s = sortSelect.value;
         if (s === 'newest') return b.year - a.year;
@@ -225,7 +219,8 @@ function displayCDs() {
             
             items.forEach(cd => {
                 const card = document.createElement('div');
-                card.className = 'cd-card';
+                // Dodajemy klasę to-buy do karty jeśli zaznaczone
+                card.className = `cd-card ${cd.toBuy ? 'to-buy' : ''}`;
                 card.innerHTML = `
                     <div class="cd-header">
                         <img src="${cd.cover || 'https://via.placeholder.com/80'}" alt="okładka">
@@ -233,6 +228,7 @@ function displayCDs() {
                             <h3>${cd.title}</h3>
                             <p><strong>${cd.artist}</strong></p>
                             <p>${cd.year} | ${cd.discs} szt.</p>
+                            ${cd.toBuy ? '<span class="to-buy-badge">🛒 Do kupienia</span>' : ''}
                         </div>
                     </div>
                     <div class="actions">
@@ -245,7 +241,7 @@ function displayCDs() {
     }
 
     if (cds.length === 0) {
-        mainContent.innerHTML = '<p style="text-align:center; color:#888; margin-top: 20px;">Twoja kolekcja jest pusta.</p>';
+        mainContent.innerHTML = '<p style="text-align:center; color:#888; margin-top: 20px;">Lista jest pusta.</p>';
     }
 }
 
@@ -253,10 +249,15 @@ function displayCDs() {
 cdForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const cdData = {
-        title: titleInput.value, artist: artistInput.value,
-        year: yearInput.value, discs: discsInput.value,
-        format: formatInput.value, cover: coverInput.value || 'https://via.placeholder.com/100'
+        title: titleInput.value, 
+        artist: artistInput.value,
+        year: yearInput.value, 
+        discs: discsInput.value,
+        format: formatInput.value, 
+        toBuy: toBuyInput.checked, // Zapis statusu "Do kupienia"
+        cover: coverInput.value || 'https://via.placeholder.com/100'
     };
+
     let cds = getCDsFromStorage();
     if (editId) {
         const idx = cds.findIndex(c => c.id === editId);
@@ -266,6 +267,7 @@ cdForm.addEventListener('submit', (e) => {
     } else {
         cds.push({ ...cdData, id: Date.now() });
     }
+    
     saveAllCDs(cds);
     cdForm.reset();
     displayCDs();
@@ -281,9 +283,13 @@ window.deleteCD = (id) => {
 window.editCD = (id) => {
     const cd = getCDsFromStorage().find(c => c.id === id);
     if (cd) {
-        titleInput.value = cd.title; artistInput.value = cd.artist;
-        yearInput.value = cd.year; discsInput.value = cd.discs;
-        formatInput.value = cd.format || 'CD'; coverInput.value = cd.cover;
+        titleInput.value = cd.title; 
+        artistInput.value = cd.artist;
+        yearInput.value = cd.year; 
+        discsInput.value = cd.discs;
+        formatInput.value = cd.format || 'CD'; 
+        toBuyInput.checked = cd.toBuy || false; // Przywrócenie stanu checkboxa
+        coverInput.value = cd.cover;
         editId = id;
         document.getElementById('add-btn').innerText = "Zaktualizuj dane";
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -299,3 +305,4 @@ document.addEventListener('DOMContentLoaded', () => {
 searchInput.addEventListener('input', displayCDs);
 sortSelect.addEventListener('change', displayCDs);
 filterFormat.addEventListener('change', displayCDs);
+    
