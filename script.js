@@ -16,130 +16,14 @@ const addUserBtn = document.getElementById('add-user-btn');
 const removeUserBtn = document.getElementById('remove-user-btn');
 const exportBtn = document.getElementById('export-btn');
 const importInput = document.getElementById('import-input');
+const addBtn = document.getElementById('add-btn');
 
 let editId = null;
-let currentLang = localStorage.getItem('app_lang') || 'pl';
-
-// --- SŁOWNIK TŁUMACZEŃ ---
-const translations = {
-    pl: {
-        header: "💿 Katalog Muzyczny",
-        profile: "Profil:",
-        saveFile: "💾 Zapisz",
-        loadFile: "📂 Wczytaj",
-        titleLabel: "Tytuł albumu:",
-        artistLabel: "Wykonawca:",
-        yearLabel: "Rok wydania:",
-        countLabel: "Ilość:",
-        formatLabel: "Format nośnika:",
-        toBuyLabel: 'Dodaj do listy "Do kupienia" 🛒',
-        coverLabel: "Link do okładki (URL):",
-        addBtn: "Dodaj do kolekcji",
-        updateBtn: "Zaktualizuj dane",
-        statAlbums: "Albumy",
-        statDiscs: "Sztuk (Nośniki)",
-        statVinyls: "Winyle",
-        statCDs: "Płyty CD",
-        searchPlaceholder: "🔍 Szukaj w całej kolekcji...",
-        filterAll: "Wszystkie nośniki",
-        filterWishlist: "🛒 Do kupienia (Wishlista)",
-        sortNewest: "Najnowsze",
-        sortOldest: "Najstarsze",
-        sortTitle: "Tytuł A-Z",
-        sortArtist: "Wykonawca A-Z",
-        emptyMsg: "Lista jest pusta.",
-        unit: "szt.",
-        toBuyBadge: "🛒 Do kupienia",
-        confirmDelete: "Czy na pewno chcesz usunąć ten album?",
-        confirmImport: "Czy zastąpić kolekcję profilu danymi z pliku?",
-        formatVinyl: "Winyle",
-        formatCD: "Płyty CD",
-        formatOther: "Inne nośniki"
-    },
-    en: {
-        header: "💿 Music Catalog",
-        profile: "Profile:",
-        saveFile: "💾 Save",
-        loadFile: "📂 Load",
-        titleLabel: "Album Title:",
-        artistLabel: "Artist:",
-        yearLabel: "Release Year:",
-        countLabel: "Quantity:",
-        formatLabel: "Media Format:",
-        toBuyLabel: 'Add to "To Buy" list 🛒',
-        coverLabel: "Cover Link (URL):",
-        addBtn: "Add to Collection",
-        updateBtn: "Update Data",
-        statAlbums: "Albums",
-        statDiscs: "Items (Discs)",
-        statVinyls: "Vinyls",
-        statCDs: "CD Discs",
-        searchPlaceholder: "🔍 Search collection...",
-        filterAll: "All Media",
-        filterWishlist: "🛒 To Buy (Wishlist)",
-        sortNewest: "Newest",
-        sortOldest: "Oldest",
-        sortTitle: "Title A-Z",
-        sortArtist: "Artist A-Z",
-        emptyMsg: "The list is empty.",
-        unit: "pcs",
-        toBuyBadge: "🛒 To Buy",
-        confirmDelete: "Are you sure you want to delete this album?",
-        confirmImport: "Replace profile collection with file data?",
-        formatVinyl: "Vinyls",
-        formatCD: "CD Discs",
-        formatOther: "Other Media"
-    }
-};
-
-// --- SYSTEM TŁUMACZEŃ ---
-window.setLanguage = (lang) => {
-    currentLang = lang;
-    localStorage.setItem('app_lang', lang);
-    updateUI();
-};
-
-function updateUI() {
-    const t = translations[currentLang];
-    
-    document.querySelector('h1').innerText = t.header;
-    document.querySelector('label[for="user-select"]').innerText = t.profile;
-    exportBtn.innerText = t.saveFile;
-    document.querySelector('.custom-file-upload').innerText = t.loadFile;
-    
-    // Formularz
-    document.querySelector('label[for="title"]').innerText = t.titleLabel;
-    document.querySelector('label[for="artist"]').innerText = t.artistLabel;
-    document.querySelector('label[for="year"]').innerText = t.yearLabel;
-    document.querySelector('label[for="discs"]').innerText = t.countLabel;
-    document.querySelector('label[for="format-select-input"]').innerText = t.formatLabel;
-    document.querySelector('label[for="to-buy-input"]').innerText = t.toBuyLabel;
-    document.querySelector('label[for="cover"]').innerText = t.coverLabel;
-    document.getElementById('add-btn').innerText = editId ? t.updateBtn : t.addBtn;
-
-    // Statystyki labels
-    const statLabels = document.querySelectorAll('.stat-label');
-    statLabels[0].innerText = t.statAlbums;
-    statLabels[1].innerText = t.statDiscs;
-    statLabels[2].innerText = t.statVinyls;
-    statLabels[3].innerText = t.statCDs;
-
-    // Placeholdery i Selecty
-    searchInput.placeholder = t.searchPlaceholder;
-    filterFormat.options[0].text = t.filterAll;
-    filterFormat.options[4].text = t.filterWishlist;
-    sortSelect.options[0].text = t.sortNewest;
-    sortSelect.options[1].text = t.sortOldest;
-    sortSelect.options[2].text = t.sortTitle;
-    sortSelect.options[3].text = t.sortArtist;
-
-    displayCDs();
-}
 
 // --- PROFILE ---
 function loadUsersList() {
     const savedUsers = localStorage.getItem('app_users');
-    let users = ["Domyslny", "Ania", "Marek"];
+    let users = ["Domyslny"];
     if (savedUsers) users = JSON.parse(savedUsers);
     else localStorage.setItem('app_users', JSON.stringify(users));
 
@@ -173,39 +57,25 @@ function updateStatistics() {
     document.getElementById('stat-cd-count').innerText = cds.filter(c => c.format === 'CD').length;
 }
 
-// --- OPERACJE NA PLIKACH ---
-exportBtn.addEventListener('click', () => {
-    const cds = getCDsFromStorage();
-    if (cds.length === 0) return;
-    const dataStr = JSON.stringify(cds, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `kolekcja_${userSelect.value}.json`;
-    link.click();
-});
-
-importInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
+// --- API ITUNES ---
+async function autoFetchData() {
+    if (titleInput.value && artistInput.value && !editId) {
+        const query = encodeURIComponent(`${artistInput.value} ${titleInput.value}`);
         try {
-            const imported = JSON.parse(event.target.result);
-            if (Array.isArray(imported) && confirm(translations[currentLang].confirmImport)) {
-                saveAllCDs(imported);
-                displayCDs();
+            const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=album&limit=1`);
+            const data = await res.json();
+            if (data.results && data.results[0]) {
+                const album = data.results[0];
+                if (!yearInput.value) yearInput.value = album.releaseDate.substring(0, 4);
+                if (!coverInput.value) coverInput.value = album.artworkUrl100.replace('100x100bb', '600x600bb');
             }
-        } catch (err) { console.error("JSON Error"); }
-    };
-    reader.readAsText(file);
-});
+        } catch (e) { console.error("Błąd API iTunes:", e); }
+    }
+}
 
 // --- RENDEROWANIE ---
 function displayCDs() {
     updateStatistics();
-    const t = translations[currentLang];
     let cds = getCDsFromStorage();
     const search = searchInput.value.toLowerCase();
     const format = filterFormat.value;
@@ -231,7 +101,7 @@ function displayCDs() {
         if (items.length === 0) continue;
         const section = document.createElement('div');
         section.className = 'format-section';
-        const label = key === 'Vinyl' ? t.formatVinyl : (key === 'CD' ? t.formatCD : t.formatOther);
+        const label = key === 'Vinyl' ? 'Winyle' : (key === 'CD' ? 'Płyty CD' : 'Inne nośniki');
         const icon = key === 'Vinyl' ? '🎵' : (key === 'CD' ? '💿' : '📦');
 
         section.innerHTML = `
@@ -251,23 +121,23 @@ function displayCDs() {
                     <div class="cd-info">
                         <h3>${cd.title}</h3>
                         <p><strong>${cd.artist}</strong></p>
-                        <p>${cd.year} | ${cd.discs} ${t.unit}</p>
-                        ${cd.toBuy ? `<span class="to-buy-badge">${t.toBuyBadge}</span>` : ''}
+                        <p>${cd.year} | ${cd.discs} szt.</p>
+                        ${cd.toBuy ? `<span class="to-buy-badge">🛒 Do kupienia</span>` : ''}
                     </div>
                 </div>
                 <div class="actions">
-                    <button class="edit-btn" onclick="editCD(${cd.id})">${currentLang === 'pl' ? 'Edytuj' : 'Edit'}</button>
-                    <button class="delete-btn" onclick="deleteCD(${cd.id})">${currentLang === 'pl' ? 'Usuń' : 'Delete'}</button>
+                    <button class="edit-btn" onclick="editCD(${cd.id})">Edytuj</button>
+                    <button class="delete-btn" onclick="deleteCD(${cd.id})">Usuń</button>
                 </div>
             `;
             grid.appendChild(card);
         });
         mainContent.appendChild(section);
     }
-    if (cds.length === 0) mainContent.innerHTML = `<p style="text-align:center; color:#888;">${t.emptyMsg}</p>`;
+    if (cds.length === 0) mainContent.innerHTML = `<p style="text-align:center; color:#888;">Lista jest pusta.</p>`;
 }
 
-// --- LOGIKA FORMULARZA I AKCJI ---
+// --- LOGIKA FORMULARZA ---
 cdForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const cdData = {
@@ -276,21 +146,25 @@ cdForm.addEventListener('submit', (e) => {
         format: formatInput.value, toBuy: toBuyInput.checked,
         cover: coverInput.value || 'https://via.placeholder.com/100'
     };
+
     let cds = getCDsFromStorage();
     if (editId) {
         const idx = cds.findIndex(c => c.id === editId);
         if (idx !== -1) cds[idx] = { ...cdData, id: editId };
         editId = null;
+        addBtn.innerText = "Dodaj do kolekcji";
     } else {
         cds.push({ ...cdData, id: Date.now() });
     }
+    
     saveAllCDs(cds);
     cdForm.reset();
-    updateUI();
+    displayCDs();
 });
 
+// --- AKCJE ---
 window.deleteCD = (id) => {
-    if (confirm(translations[currentLang].confirmDelete)) {
+    if (confirm("Czy na pewno chcesz usunąć?")) {
         saveAllCDs(getCDsFromStorage().filter(c => c.id !== id));
         displayCDs();
     }
@@ -304,13 +178,13 @@ window.editCD = (id) => {
     formatInput.value = cd.format; toBuyInput.checked = cd.toBuy;
     coverInput.value = cd.cover;
     editId = id;
+    addBtn.innerText = "Zaktualizuj dane";
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    updateUI();
 };
 
 // --- PROFILE BTNS ---
 addUserBtn.onclick = () => {
-    const n = prompt("Name:");
+    const n = prompt("Imię użytkownika:");
     if (n?.trim()) {
         const opt = document.createElement('option');
         opt.value = opt.textContent = n.trim();
@@ -322,7 +196,7 @@ addUserBtn.onclick = () => {
 };
 
 removeUserBtn.onclick = () => {
-    if (userSelect.options.length > 1 && confirm("Delete?")) {
+    if (userSelect.options.length > 1 && confirm("Usunąć profil?")) {
         localStorage.removeItem(getStorageKey());
         let users = JSON.parse(localStorage.getItem('app_users')).filter(u => u !== userSelect.value);
         localStorage.setItem('app_users', JSON.stringify(users));
@@ -331,13 +205,43 @@ removeUserBtn.onclick = () => {
     }
 };
 
+// --- OPERACJE NA PLIKACH ---
+exportBtn.onclick = () => {
+    const cds = getCDsFromStorage();
+    if (cds.length === 0) return alert("Pusta lista!");
+    const dataStr = JSON.stringify(cds, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `kolekcja_${userSelect.value}.json`;
+    link.click();
+};
+
+importInput.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const imported = JSON.parse(event.target.result);
+            if (Array.isArray(imported) && confirm("Zastąpić listę?")) {
+                saveAllCDs(imported);
+                displayCDs();
+            }
+        } catch (err) { alert("Błąd pliku!"); }
+    };
+    reader.readAsText(file);
+};
+
 // --- START ---
 document.addEventListener('DOMContentLoaded', () => { 
     loadUsersList(); 
-    updateUI(); 
+    displayCDs(); 
 });
 userSelect.onchange = displayCDs;
 searchInput.oninput = displayCDs;
 sortSelect.onchange = displayCDs;
 filterFormat.onchange = displayCDs;
-            
+titleInput.addEventListener('blur', autoFetchData);
+artistInput.addEventListener('blur', autoFetchData);
