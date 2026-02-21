@@ -20,7 +20,7 @@ body {
 
 h1 { text-align: center; color: #00d4ff; margin-bottom: 25px; }
 
-/* --- UŻYTKOWNIK (Okrągłe przyciski i pigułka) --- */
+/* --- UŻYTKOWNIK --- */
 .user-selector {
     display: flex;
     flex-direction: row;
@@ -59,9 +59,35 @@ h1 { text-align: center; color: #00d4ff; margin-bottom: 25px; }
     transition: transform 0.2s;
 }
 
-#add-user-btn { background: #f39c12;color: #000; }
+#add-user-btn { background: #f39c12; color: #000; }
 #remove-user-btn { background: #e74c3c; color: white; }
 #add-user-btn:hover, #remove-user-btn:hover { transform: scale(1.1); }
+
+/* --- OPERACJE NA PLIKACH --- */
+.file-operations {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+#export-btn, .custom-file-upload {
+    padding: 10px 15px;
+    background: #27ae60;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: bold;
+    border: none;
+    text-transform: uppercase;
+    transition: background 0.2s;
+}
+
+.custom-file-upload { background: #2980b9; }
+#export-btn:hover { background: #2ecc71; }
+.custom-file-upload:hover { background: #3498db; }
 
 /* --- FORMULARZ --- */
 form {
@@ -111,10 +137,56 @@ input:focus, select:focus { border-color: #00d4ff; }
     text-transform: uppercase;
 }
 
-/* --- SEKCJE FORMATÓW (Nagłówki CD/Winyl) --- */
-.format-section {
-    margin-bottom: 40px;
+/* --- STATYSTYKI --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
 }
+
+.stat-card {
+    background: #2a2a2a;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #444;
+    text-align: center;
+    border-bottom: 3px solid #00d4ff; /* Akcent kolorystyczny */
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #00d4ff;
+}
+
+/* --- FILTRY I KONTROLKI --- */
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+#search-input { flex: 2; min-width: 200px; }
+#filter-format, #sort-select { 
+    flex: 1; 
+    min-width: 150px;
+    font-weight: bold;
+    color: #00d4ff;
+}
+
+/* --- SEKCJE FORMATÓW --- */
+.format-section { margin-bottom: 40px; }
 
 .format-section-title {
     font-size: 1.4rem;
@@ -148,7 +220,7 @@ input:focus, select:focus { border-color: #00d4ff; }
     border-radius: 4px;
     border: 1px solid #444;
     display: flex;
-    flex-direction: column; /* Układ pionowy dla szerokich przycisków */
+    flex-direction: column;
     padding: 15px;
     gap: 15px;
 }
@@ -179,7 +251,7 @@ input:focus, select:focus { border-color: #00d4ff; }
 }
 .cd-info p { font-size: 0.9rem; color: #ccc; }
 
-/* --- POWIĘKSZONE PRZYCISKI AKCJI (Szerokość 100%) --- */
+/* --- PRZYCISKI AKCJI --- */
 .actions {
     display: flex;
     gap: 10px;
@@ -188,7 +260,7 @@ input:focus, select:focus { border-color: #00d4ff; }
 
 .edit-btn, .delete-btn {
     padding: 8px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     flex: 1;
     border: none;
     border-radius: 4px;
@@ -206,26 +278,10 @@ input:focus, select:focus { border-color: #00d4ff; }
 .delete-btn:hover { background: #c0392b; }
 .edit-btn:active, .delete-btn:active { transform: scale(0.98); }
 
-/* --- FILTRY I KONTROLKI --- */
-.controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-}
-
-#search-input { flex: 2; min-width: 200px; }
-#filter-format, #sort-select { 
-    flex: 1; 
-    min-width: 150px;
-    font-weight: bold;
-    color: #00d4ff;
-}
-
 /* RESPONSYWNOŚĆ */
 @media (max-width: 600px) {
     .controls { flex-direction: column; }
     .row { flex-direction: column; }
-    .user-selector { border-radius: 4px; flex-wrap: wrap; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
     .grid-container { grid-template-columns: 1fr; }
 }
