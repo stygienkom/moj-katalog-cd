@@ -1,5 +1,5 @@
 const cdForm = document.getElementById('cd-form');
-const mainContent = document.getElementById('main-content'); // Zmienione z cdList
+const mainContent = document.getElementById('main-content');
 const titleInput = document.getElementById('title');
 const artistInput = document.getElementById('artist');
 const yearInput = document.getElementById('year');
@@ -8,10 +8,14 @@ const formatInput = document.getElementById('format-select-input');
 const coverInput = document.getElementById('cover');
 const searchInput = document.getElementById('search-input');
 const sortSelect = document.getElementById('sort-select');
-const filterFormat = document.getElementById('filter-format'); // NOWY ELEMENT
+const filterFormat = document.getElementById('filter-format'); 
 const userSelect = document.getElementById('user-select');
 const addUserBtn = document.getElementById('add-user-btn');
 const removeUserBtn = document.getElementById('remove-user-btn');
+
+// ELEMENTY DO OBSŁUGI PLIKÓW
+const exportBtn = document.getElementById('export-btn');
+const importInput = document.getElementById('import-input');
 
 let editId = null;
 
@@ -47,6 +51,79 @@ function saveAllCDs(cds) {
     localStorage.setItem(getStorageKey(), JSON.stringify(cds));
 }
 
+// --- NOWA FUNKCJA: STATYSTYKI ---
+function updateStatistics() {
+    const cds = getCDsFromStorage();
+    
+    // Liczba unikalnych albumów
+    const totalAlbums = cds.length;
+    
+    // Suma wszystkich fizycznych nośników (pole 'ilość')
+    const totalDiscs = cds.reduce((sum, cd) => sum + parseInt(cd.discs || 0), 0);
+    
+    // Liczba albumów na konkretnych nośnikach
+    const vinylCount = cds.filter(c => c.format === 'Vinyl').length;
+    const cdCount = cds.filter(c => c.format === 'CD').length;
+
+    // Aktualizacja elementów w HTML
+    document.getElementById('stat-total-albums').innerText = totalAlbums;
+    document.getElementById('stat-total-discs').innerText = totalDiscs;
+    document.getElementById('stat-vinyl-count').innerText = vinylCount;
+    document.getElementById('stat-cd-count').innerText = cdCount;
+}
+
+// --- OPERACJE NA PLIKACH ---
+
+if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+        const cds = getCDsFromStorage();
+        if (cds.length === 0) {
+            alert("Kolekcja tego profilu jest pusta!");
+            return;
+        }
+        const dataStr = JSON.stringify(cds, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", url);
+        downloadAnchorNode.setAttribute("download", `kolekcja_${userSelect.value}.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+        URL.revokeObjectURL(url);
+    });
+}
+
+if (importInput) {
+    importInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const importedCDs = JSON.parse(event.target.result);
+                if (Array.isArray(importedCDs)) {
+                    if (confirm(`Czy zastąpić kolekcję profilu "${userSelect.value}" danymi z pliku (${importedCDs.length} płyt)?`)) {
+                        saveAllCDs(importedCDs);
+                        displayCDs(); // To automatycznie wywoła statystyki
+                        alert("Kolekcja wczytana pomyślnie!");
+                    }
+                } else {
+                    alert("Błąd: Wybrany plik nie zawiera poprawnej listy płyt.");
+                }
+            } catch (err) {
+                alert("Błąd krytyczny pliku JSON.");
+            }
+            importInput.value = "";
+        };
+        reader.readAsText(file);
+    });
+}
+
+// --- ZARZĄDZANIE PROFILAMI ---
+
 addUserBtn.addEventListener('click', () => {
     const newUser = prompt("Imię nowego użytkownika:");
     if (newUser?.trim()) {
@@ -64,7 +141,7 @@ addUserBtn.addEventListener('click', () => {
 
 removeUserBtn.addEventListener('click', () => {
     if (userSelect.options.length <= 1) return alert("Nie można usunąć ostatniego profilu!");
-    if (confirm(`Usunąć profil ${userSelect.value}?`)) {
+    if (confirm(`Usunąć profil ${userSelect.value} wraz z jego kolekcją?`)) {
         localStorage.removeItem(getStorageKey());
         let users = JSON.parse(localStorage.getItem('app_users')).filter(u => u !== userSelect.value);
         localStorage.setItem('app_users', JSON.stringify(users));
@@ -74,12 +151,13 @@ removeUserBtn.addEventListener('click', () => {
 });
 
 userSelect.addEventListener('change', () => {
-    editId = null; cdForm.reset();
+    editId = null; 
+    cdForm.reset();
     document.getElementById('add-btn').innerText = "Dodaj do kolekcji";
     displayCDs();
 });
 
-// --- API iTunes ---
+// --- API ITUNES ---
 async function autoFetchData() {
     if (titleInput.value && artistInput.value && !editId) {
         const query = encodeURIComponent(`${artistInput.value} ${titleInput.value}`);
@@ -97,20 +175,21 @@ async function autoFetchData() {
 titleInput.addEventListener('blur', autoFetchData);
 artistInput.addEventListener('blur', autoFetchData);
 
-// --- LOGIKA WYŚWIETLANIA (SEKCJE I FILTRY) ---
+// --- RENDEROWANIE LISTY (Z AKTUALIZACJĄ STATYSTYK) ---
 function displayCDs() {
+    // KLUCZOWE: Wywołujemy statystyki przy każdym odświeżeniu widoku
+    updateStatistics();
+
     let cds = getCDsFromStorage();
     const search = searchInput.value.toLowerCase();
     const selectedFormat = filterFormat.value;
 
-    // 1. Filtrowanie (Wyszukiwarka + Wybrany Nośnik)
     cds = cds.filter(c => {
         const matchesSearch = c.title.toLowerCase().includes(search) || c.artist.toLowerCase().includes(search);
         const matchesFormat = selectedFormat === 'all' || c.format === selectedFormat;
         return matchesSearch && matchesFormat;
     });
     
-    // 2. Sortowanie wewnątrz przyszłych grup
     cds.sort((a, b) => {
         const s = sortSelect.value;
         if (s === 'newest') return b.year - a.year;
@@ -118,7 +197,6 @@ function displayCDs() {
         return a[s].localeCompare(b[s]);
     });
 
-    // 3. Grupowanie według formatu
     const grouped = {
         'Vinyl': cds.filter(c => c.format === 'Vinyl'),
         'CD': cds.filter(c => c.format === 'CD'),
@@ -127,12 +205,10 @@ function displayCDs() {
 
     mainContent.innerHTML = '';
 
-    // 4. Renderowanie sekcji
     for (const [formatName, items] of Object.entries(grouped)) {
         if (items.length > 0) {
             const section = document.createElement('div');
             section.className = 'format-section';
-            
             const icon = formatName === 'Vinyl' ? '🎵' : (formatName === 'CD' ? '💿' : '📦');
             const titleLabel = formatName === 'Vinyl' ? 'Winyle' : (formatName === 'CD' ? 'Płyty CD' : 'Inne nośniki');
             
@@ -169,11 +245,11 @@ function displayCDs() {
     }
 
     if (cds.length === 0) {
-        mainContent.innerHTML = '<p style="text-align:center; color:#888; margin-top: 20px;">Brak albumów spełniających kryteria.</p>';
+        mainContent.innerHTML = '<p style="text-align:center; color:#888; margin-top: 20px;">Twoja kolekcja jest pusta.</p>';
     }
 }
 
-// --- FORMULARZ I AKCJE ---
+// --- DODAWANIE / EDYCJA ---
 cdForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const cdData = {
@@ -196,7 +272,7 @@ cdForm.addEventListener('submit', (e) => {
 });
 
 window.deleteCD = (id) => {
-    if (confirm("Usunąć ten album?")) {
+    if (confirm("Czy na pewno chcesz usunąć ten album?")) {
         saveAllCDs(getCDsFromStorage().filter(c => c.id !== id));
         displayCDs();
     }
@@ -222,4 +298,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 searchInput.addEventListener('input', displayCDs);
 sortSelect.addEventListener('change', displayCDs);
-filterFormat.addEventListener('change', displayCDs); // NOWA OBSŁUGA FILTRA
+filterFormat.addEventListener('change', displayCDs);
